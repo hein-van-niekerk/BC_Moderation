@@ -1,4 +1,6 @@
 
+
+// Main backend entry point. Sets up Express server and API routes for moderation dashboard.
 import express from 'express';
 import cors from 'cors';
 import { login as doLogin, authMiddleware } from './auth';
@@ -7,7 +9,8 @@ import sql, { poolPromise } from './db';
 const app = express();
 app.use(cors());
 app.use(express.json());
-// Get modules for a lecturer (teaching)
+// Endpoint: Get all modules assigned to a lecturer
+// Uses lecturer_id from JWT to fetch modules from DB
 app.get('/api/modules/lecturer', authMiddleware('Lecturer'), async (req: any, res) => {
   try {
     const lecturerId = req.user.id;
@@ -30,7 +33,8 @@ app.get('/api/modules/lecturer', authMiddleware('Lecturer'), async (req: any, re
   }
 });
 
-// Get modules for a department head (all modules in their department)
+// Endpoint: Get all modules for a department head's department
+// Uses department_id from JWT, joins Lecturers, ModuleLecturers, Modules
 app.get('/api/modules/department', authMiddleware('Department Head'), async (req: any, res) => {
   try {
     const pool = await poolPromise;
@@ -57,6 +61,8 @@ app.get('/api/modules/department', authMiddleware('Department Head'), async (req
   }
 });
 
+// Endpoint: User login
+// Authenticates user and returns JWT if credentials are valid
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   const r = await doLogin(email, password);
@@ -70,7 +76,8 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 
-// NQF analysis for a module (based on all its assessments)
+// Endpoint: NQF analysis for a module
+// Calculates Bloom's taxonomy and NQF level based on all assessments for a module
 app.get('/api/modules/:moduleId/nqf-analysis', authMiddleware(), async (req, res) => {
   const { moduleId } = req.params;
   try {
@@ -118,6 +125,8 @@ app.get('/api/modules/:moduleId/nqf-analysis', authMiddleware(), async (req, res
   }
 });
 
+// Endpoint: Get all assessments (tests) for a module
+// Returns list of assessments for a given module from DB
 app.get('/api/modules/:moduleId/tests', authMiddleware(), async (req, res) => {
   const { moduleId } = req.params;
   try {
@@ -141,8 +150,9 @@ app.get('/api/modules/:moduleId/tests', authMiddleware(), async (req, res) => {
   }
 });
 
+// Endpoint: Get details and analysis for a specific test/assessment
+// Returns assessment info, questions, topic coverage, Bloom's breakdown, NQF analysis
 app.get('/api/tests/:testId', authMiddleware(), async (req, res) => {
-  // ...existing code...
   const { testId } = req.params;
   try {
     const pool = await poolPromise;
@@ -284,5 +294,7 @@ app.get('/api/tests/:testId', authMiddleware(), async (req, res) => {
 
 
 
+
+// Start the Express server
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`Backend listening on ${port}`));
