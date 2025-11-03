@@ -16,7 +16,7 @@ export function computeDifficultyDistribution(test: Test) {
 }
 
 export function estimateNqfFromTest(test: Test) {
-  // naive: more higher-order blooms -> higher NQF
+  //higher-order blooms -> higher NQF
   const weights: Record<string, number> = { Recall: 1, Comprehension: 2, Application: 3, Analysis: 4, Evaluation: 5, Creation: 6 };
   let score = 0;
   let marks = 0;
